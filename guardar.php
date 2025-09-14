@@ -4,28 +4,23 @@ $username   = "TU_USUARIO";
 $password   = "TU_PASSWORD";
 $dbname     = "TU_DB";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+try {
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if ($conn->connect_error) {
-    die("Conexión fallida: " . $conn->connect_error);
-}
+    if(isset($_POST['nombre'], $_POST['email'])){
+        $nombre = $_POST['nombre'];
+        $email = $_POST['email'];
 
-if(isset($_POST['nombre'], $_POST['email'])){
-    $nombre = $_POST['nombre'];
-    $email = $_POST['email'];
+        $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email) VALUES (:nombre, :email)");
+        $stmt->bindParam(':nombre', $nombre);
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
 
-    $stmt = $conn->prepare("INSERT INTO usuarios (nombre, email) VALUES (?, ?)");
-    $stmt->bind_param("ss", $nombre, $email);
-
-    if($stmt->execute()){
         echo "Usuario registrado correctamente.";
-    } else {
-        echo "Error al registrar usuario: " . $stmt->error;
     }
-
-    $stmt->close();
+} catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
 }
-
-$conn->close();
 ?>
 
